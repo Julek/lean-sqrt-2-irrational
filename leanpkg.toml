@@ -1,0 +1,8 @@
+[package]
+name = "lean-sqrt-2-irrational"
+version = "0.1"
+lean_version = "leanprover-community/lean:3.49.1"
+path = "src"
+
+[dependencies]
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "138f1db8dbd28f2a49c8dc0a67d568a71573869b"}
