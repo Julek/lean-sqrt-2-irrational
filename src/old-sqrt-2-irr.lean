@@ -6,8 +6,7 @@ open nat
 
 theorem sqrt_2_irr : ∀ q : ℚ, q^2 ≠ 2 := 
 begin
-  intro q,
-  intro q_sqrd_eq_2,
+  intros q q_sqrd_eq_2,
 
   have h₁ : q.num.nat_abs^2 = 2 * q.denom^2 := 
   begin

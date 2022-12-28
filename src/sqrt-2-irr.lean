@@ -12,11 +12,9 @@ theorem rootn_not_pn_irr :
 begin
   intros e n e_ge_1 not_perfect_pow q q_to_e_eq_n,
   
-  by_cases q < 0 ∧ odd e;
-  revert e,
+  by_cases q < 0 ∧ odd e,
   {
-    intros e e_ge_1 not_perfect_pow q_to_e_eq_n h,
-    have h' : ∀ e₁ : ℕ, odd e₁ → q ^ e₁ < 0,
+    have h₁ : ∀ e₁ : ℕ, odd e₁ → q ^ e₁ < 0,
     {
       intros e₁ e₁_odd,
 
@@ -32,21 +30,14 @@ begin
           exact h.1,
         },
         {
-          rw ← nat.add_one,
-          rw nat.left_distrib,
+          rw [←nat.add_one, nat.left_distrib],
           simp,
-          rw pow_succ,
-          rw pow_succ,
-          rw ←rat.mul_assoc,
-          rw mul_neg_iff,
+          rw [pow_succ, pow_succ, ←rat.mul_assoc, mul_neg_iff],
           left,
           split,
           {
             simp[h.1],
-            intro h'',
-            rw h'' at h,
-            simp at h,
-            exact h,
+            linarith,
           },
           {
             apply ih (2 * k + 1),
@@ -65,14 +56,13 @@ begin
       },
     },
     
-    specialize h' e h.2,
-    rw q_to_e_eq_n at h',
-    norm_cast at h',
-    simp at h',
-    exact h',
+    specialize h₁ e h.2,
+    rw q_to_e_eq_n at h₁,
+    norm_cast at h₁,
+    simp at h₁,
+    exact h₁,
   },
   {
-    intros e e_ge_1 not_perfect_pow q_to_e_eq_n h,
     have h₁ : q.num.nat_abs^e = n * q.denom^e :=
       begin
         rw rat.eq_iff_mul_eq_mul at q_to_e_eq_n,
@@ -85,8 +75,7 @@ begin
           simp at h',
           have q_num_ge_0 : q.num ≥ 0,
           {
-            rw ge_iff_le,
-            rw rat.num_nonneg_iff_zero_le,
+            rw [ge_iff_le, rat.num_nonneg_iff_zero_le],
             exact h',
           },
           norm_cast,
