@@ -32,15 +32,7 @@ lemma rat_pow_denom_lemma :
       rw [←int.nat_abs_mul, int.mul_comm] at h₄,
       exact nat.coprime.mul_right h₃ h₄,
     },
-    have h₃ : ∀ {a b : ℕ}, (↑a : ℤ) = (↑b : ℤ) → a = b,
-    {
-      intros a b h,
-      unfold coe at h, unfold lift_t at h, unfold has_lift_t.lift at h,
-      unfold coe_t at h, unfold has_coe_t.coe at h, unfold coe_b at h,
-      unfold has_coe.coe at h,
-      injection h,
-    },
-    apply h₃,
+    apply int.coe_nat_inj,
     cases ↑(a_denom * b_denom),
     {
       delta rat.mk,
