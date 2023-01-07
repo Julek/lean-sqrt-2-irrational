@@ -3,6 +3,7 @@ import data.nat.parity
 import data.nat.prime
 import data.rat
 
+
 open nat 
 
 lemma rat_pow_denom_lemma : 
@@ -149,4 +150,130 @@ lemma abs_pow_eq_pow_of_even_exp :
     intros i _ h,
     rw ←int.abs_eq_nat_abs,
     exact even.pow_abs h i,
+  end
+
+lemma pow_ord_lemma : ∀ (e ≥ 1), ∀ {a b : ℕ}, a ^ e < b ^ e → a < b :=
+  begin
+    intros e e_ge_1 a b h',
+    by_contra' h₁,
+    cases eq_or_lt_of_le h₁ with h₁ h₁,
+    {
+      rw ←h₁ at h',
+      simp at h',
+      exact h',
+    },
+    {
+      have h := lt_trans h' (nat.pow_lt_pow_of_lt_left h₁ e_ge_1),
+      simp at h,
+      exact h,
+    },
+  end
+
+lemma ord_lemma : ∀ n : ℕ, ¬ ∃ m : ℕ, n < m ∧ m < n + 1 :=
+  begin
+    rintros n ⟨m, h⟩,
+    have h := lt_of_le_of_lt ((by linarith) : n + 1 ≤ m) h.2,
+    simp at h,
+    exact h,
+  end
+
+  lemma sord_mul_lem : ∀ {a b c d : ℕ}, a < c → b < d → a * b < c * d :=
+  begin
+    intros a b c d,
+    revert a b c,
+    induction d,
+    {
+      introv,
+      intros _ h,
+      exfalso,
+      simp at h,
+      exact h,
+    },
+    {
+      introv,
+      intros h₁ h₂,
+      by_cases h₃ : b < d_n,
+      {
+        have i : c * d_n.succ = c * d_n + c,
+        refl,
+        rw i,
+        specialize d_ih a b c h₁ h₃,
+        apply lt_trans d_ih,
+        simp,
+        cases c,
+        {
+          exfalso,
+          simp at h₁,
+          exact h₁,
+        },
+        {
+          simp,
+        },
+      },
+      {
+        cases eq_or_lt_of_le ((lt_succ_iff.mp h₂) : b ≤ d_n) with h h,
+        {
+
+          rw ←h,
+          induction c,
+          {
+            exfalso,
+            simp at h₁,
+            exact h₁,
+          },
+          {
+            by_cases h₄ : a < c_n,
+            {
+
+              rw add_one_mul,
+              apply lt_trans (c_ih h₄),
+              apply lt_add_of_pos_right,
+              simp,
+            },
+            {
+              cases eq_or_lt_of_le ((lt_succ_iff.mp h₁) : a ≤ c_n) with h' h',
+              {
+                
+                rw ←h',
+                rw add_one_mul,
+                rw (_ : a * b.succ = a * b + a),
+                rw nat.add_assoc (a * b) a b.succ,
+                apply lt_add_of_pos_right,
+                simp,
+                refl,
+              },
+              {
+                exfalso,
+                exact h₄ h',
+              }
+
+            },
+          }
+        },
+        {
+          exfalso,
+          exact h₃ h,
+        },
+      },
+    },
+  end
+
+lemma ord_mul_lem : ∀ {a b c d : ℕ}, a ≥ b → c ≥ d → a * c ≥ b * d :=
+  begin
+    introv,
+    intros h h',
+    cases eq_or_lt_of_le h with h₁ h₁;
+    cases eq_or_lt_of_le h' with h₂ h₂,
+    repeat {
+      rw h₁,
+      apply nat.mul_le_mul_left _,
+      exact h',
+    },
+    repeat {
+      rw h₂,
+      apply nat.mul_le_mul_right _,
+      exact h,
+    },
+    have := sord_mul_lem h₁ h₂,
+    linarith,
   end
