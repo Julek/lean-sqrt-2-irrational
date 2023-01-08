@@ -12,7 +12,7 @@ begin
   begin
     rw rat.eq_iff_mul_eq_mul at q_sqrd_eq_2,
     norm_cast at q_sqrd_eq_2,
-    simp at q_sqrd_eq_2,
+    rw [mul_one, cast_mul, int.coe_nat_bit0, cast_one] at q_sqrd_eq_2,
     rw ← int.coe_nat_eq_coe_nat_iff,
     field_simp,
     simp only [sq] at *,
@@ -22,8 +22,7 @@ begin
 
   have h₂ : 2 ∣ q.num.nat_abs := 
   begin
-    have h : 2 ∣ 2*q.denom^2 := 
-      by simp,
+    have h := dvd_mul_right 2 (q.denom ^ 2),
     rw ←h₁ at h,
     cases (prime.dvd_mul prime_two).1 h with h_1,
     exact h_1,
@@ -33,17 +32,11 @@ begin
 
   have h₃ : 2 ∣ q.denom := 
     begin
-      have h : 2*2 ∣ q.num.nat_abs ^ 2 := 
-        by apply pow_dvd_pow_of_dvd h₂,
+      have h : 2*2 ∣ q.num.nat_abs ^ 2 := pow_dvd_pow_of_dvd h₂ _,
       rw h₁ at h,
-      have h' : 2 ∣ q.denom ^ 2 := 
-      begin
-        apply @dvd_of_mul_dvd_mul_left _ _ 2,
-        simp,
-        assumption,
-      end,
+      have h' : 2 ∣ q.denom ^ 2 := dvd_of_mul_dvd_mul_left succ_pos' h,
       cases (prime.dvd_mul prime_two).1 h',
-      assumption,
+      exact h_1,
       rw [nat.add, npow_rec, npow_rec, mul_one] at h_1,
       exact h_1,
     end,
@@ -57,9 +50,7 @@ begin
       have c_denom_ge_1 : c_denom ≥ 1 := 
         by linarith [q.pos],
       rw [q_num_eq_2_c_num, q_denom_eq_c_denom, gcd_mul_left],
-      have h₅ : 0 < c_num.gcd c_denom := 
-        nat.gcd_pos_of_pos_right c_num c_denom_ge_1,
-      linarith,
+      linarith [nat.gcd_pos_of_pos_right c_num c_denom_ge_1],
     end,
 
   have h₅ : gcd q.num.nat_abs q.denom = 1 := q.cop,
@@ -77,7 +68,7 @@ begin
     begin
       rw rat.eq_iff_mul_eq_mul at q_sqrd_eq_n,
       norm_cast at q_sqrd_eq_n,
-      simp at q_sqrd_eq_n,
+      rw [mul_one, cast_mul] at q_sqrd_eq_n,
       rw ← int.coe_nat_eq_coe_nat_iff,
       field_simp,
       simp only [sq] at *,
@@ -87,7 +78,7 @@ begin
   
   by_cases q.denom = 1,
   {
-    simp[h] at h₁,
+    rw [h, one_pow, mul_one] at h₁,
     apply n_not_perfect_square,
     use q.num.nat_abs,
     exact eq.symm h₁,

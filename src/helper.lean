@@ -169,7 +169,7 @@ lemma pow_ord_lemma : ∀ (e ≥ 1), ∀ {a b : ℕ}, a ^ e < b ^ e → a < b :=
 lemma ord_lemma : ∀ n : ℕ, ¬ ∃ m : ℕ, n < m ∧ m < n + 1 :=
   begin
     rintros n ⟨m, h⟩,
-    exact (lt_self_iff_false (n + 1)).1 (lt_of_le_of_lt ((by linarith) : n + 1 ≤ m) h.2),
+    exact (lt_self_iff_false (n + 1)).1 (lt_of_le_of_lt (by linarith : n + 1 ≤ m) h.2),
   end
 
   lemma sord_mul_lem : ∀ {a b c d : ℕ}, a < c → b < d → a * b < c * d :=
@@ -214,16 +214,12 @@ lemma ord_lemma : ∀ n : ℕ, ¬ ∃ m : ℕ, n < m ∧ m < n + 1 :=
           {
             by_cases h₄ : a < c_n,
             {
-
               rw add_one_mul,
-              apply lt_trans (c_ih h₄),
-              apply lt_add_of_pos_right,
-              exact succ_pos',
+              exact lt_trans (c_ih h₄) (lt_add_of_pos_right _ succ_pos'),
             },
             {
               cases eq_or_lt_of_le ((lt_succ_iff.mp h₁) : a ≤ c_n) with h' h',
-              {
-                
+              {   
                 rw [←h', add_one_mul, (_ : a * b.succ = a * b + a), nat.add_assoc (a * b) a b.succ],
                 apply lt_add_of_pos_right,
                 simp only [add_pos_iff, succ_pos', or_true],
@@ -233,7 +229,6 @@ lemma ord_lemma : ∀ n : ℕ, ¬ ∃ m : ℕ, n < m ∧ m < n + 1 :=
                 exfalso,
                 exact h₄ h',
               }
-
             },
           }
         },
@@ -253,13 +248,11 @@ lemma ord_mul_lem : ∀ {a b c d : ℕ}, a ≥ b → c ≥ d → a * c ≥ b * d
     cases eq_or_lt_of_le h' with h₂ h₂,
     repeat {
       rw h₁,
-      apply nat.mul_le_mul_left _,
-      exact h',
+      exact nat.mul_le_mul_left _ h',
     },
     repeat {
       rw h₂,
-      apply nat.mul_le_mul_right _,
-      exact h,
+      exact nat.mul_le_mul_right _ h,
     },
     have := sord_mul_lem h₁ h₂,
     linarith,
@@ -295,8 +288,7 @@ lemma neg_odd_pow_lemma {q : ℚ} {e₁ : ℕ} : q < 0 → odd e₁ → q ^ e₁
         {
           apply ih (2 * k + 1),
           {
-            rw h',
-            rw [add_lt_add_iff_right, mul_lt_mul_left succ_pos'],
+            rw [h', add_lt_add_iff_right, mul_lt_mul_left succ_pos'],
             exact lt_add_one k,
           },
           {

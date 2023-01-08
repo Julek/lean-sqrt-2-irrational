@@ -82,8 +82,7 @@ begin
               rw pow_zero,
             },
             {
-              apply @nat.coprime.dvd_of_dvd_mul_left (q.num.nat_abs ^ e) q.num.nat_abs,
-              exact coprime.pow_right e q.cop.symm,
+              apply nat.coprime.dvd_of_dvd_mul_left (coprime.pow_right e q.cop.symm),
               use (n * q.denom ^ e),
               conv {
                 congr,
@@ -93,7 +92,6 @@ begin
                 congr,
                 skip,
                 rw [nat.mul_comm, ←pow_succ],
-                skip,
               },
               exact h₁,
             },
