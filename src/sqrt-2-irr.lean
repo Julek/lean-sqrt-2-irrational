@@ -17,71 +17,27 @@ begin
   {
     intros not_perfect_pow q q_to_e_eq_n,
     
-    by_cases q < 0 ∧ odd e,
-    {
-      have h₁ : ∀ e₁ : ℕ, odd e₁ → q ^ e₁ < 0,
-      {
-        intros e₁ e₁_odd,
-
-        induction e₁ using nat.strong_induction_on with e₁ ih,
-        {
-          simp at ih,
-          unfold odd at e₁_odd,
-          rcases e₁_odd with ⟨k,h'⟩,
-          rw h',
-          cases k,
-          {
-            simp,
-            exact h.1,
-          },
-          {
-            rw [←nat.add_one, nat.left_distrib],
-            simp,
-            rw [pow_succ, pow_succ, ←rat.mul_assoc, mul_neg_iff],
-            left,
-            split,
-            {
-              simp[h.1],
-              linarith,
-            },
-            {
-              apply ih (2 * k + 1),
-              {
-                rw h',
-                simp,
-                exact lt_add_one k,
-              },
-              {
-                rw ←nat.odd_iff_not_even,
-                unfold odd,
-                use k,
-              },
-            },
-          },
-        },
-      },
-      
-      specialize h₁ e h.2,
+    by_cases h : q < 0 ∧ odd e,
+    { 
+      have h₁ := neg_odd_pow_lemma h.1 h.2,
       rw q_to_e_eq_n at h₁,
       norm_cast at h₁,
-      simp at h₁,
-      exact h₁,
+      exact nat.not_lt_zero n h₁,
     },
     {
       have h₁ : q.num.nat_abs^e = n * q.denom^e :=
         begin
           rw rat.eq_iff_mul_eq_mul at q_to_e_eq_n,
           norm_cast at q_to_e_eq_n,
-          simp at q_to_e_eq_n,
+          rw [mul_one, cast_mul] at q_to_e_eq_n,
           rw ← int.coe_nat_eq_coe_nat_iff,
           field_simp,
           cases ((by tauto!) : ¬(q < 0) ∨ ¬(odd e)) with h' h',
           {
-            simp at h',
             have q_num_ge_0 : q.num ≥ 0,
             {
               rw [ge_iff_le, rat.num_nonneg_iff_zero_le],
-              exact h',
+              exact not_lt.1 h',
             },
             norm_cast,
             rw 
@@ -108,11 +64,9 @@ begin
 
       by_cases q.denom = 1,
       {
-        rw h at h₁,
-        simp at h₁,
+        rw [h, one_pow, mul_one] at h₁,
         apply not_perfect_pow,
-        use q.num.nat_abs,
-        exact h₁,
+        exact ⟨q.num.nat_abs, h₁⟩,
       },
       {
         have h₂ : q.denom ∣ q.num.nat_abs :=
@@ -121,11 +75,11 @@ begin
             {
               exfalso,
               apply not_perfect_pow,
-              use 0,
-              simp,
-              simp at q_to_e_eq_n,
+              rw pow_zero at q_to_e_eq_n,
               norm_cast at q_to_e_eq_n,
-              exact q_to_e_eq_n,
+              rw ← q_to_e_eq_n,
+              use 0,
+              rw pow_zero,
             },
             {
               apply @nat.coprime.dvd_of_dvd_mul_left (q.num.nat_abs ^ e) q.num.nat_abs,
@@ -159,9 +113,10 @@ begin
   },
 end
 
+
 def floor_root' (e n : ℕ) : ℕ → ℕ
 | 0 := 0
-| (k+1) := if k ^ e ≤ n then k else floor_root' k
+| k'@(k+1) := if k' ^ e ≤ n then k' else floor_root' k
 
 def floor_root (e n : ℕ) : ℕ := floor_root' e n n
 
@@ -170,40 +125,74 @@ lemma floor_root_lemma (e : ℕ) (h : e ≥ 1): ∀ n : ℕ, (floor_root e n)^e 
   begin
     intro n,
     unfold floor_root,
-    have h₁ : ∀ m : ℕ, m ^ e ≥ n → floor_root' e n m ^ e ≤ n ∧ n < (floor_root' e n m + 1) ^ e,
-    sorry,
-    apply h₁ n,
     {
-      cases n,
+      have h₁ : ∀ e n m : ℕ, e ≥ 1 → (m + 1) ^ e > n → floor_root' e n m ^ e ≤ n ∧ n < (floor_root' e n m + 1) ^ e,
       {
-        simp,
-      },
-      {
-        induction e,
+        introv,
+        revert e_1 n_1,
+        induction m,
         {
-          exfalso,
-          simp at h,
-          exact h,
-        },
-        { 
-          cases e_n,
+          introv,
+          intros e_ge_1 h₁,
+          cases e_1,
           {
-            simp,
+            linarith,
           },
           {
-            rw pow_succ,
-            conv {
-              to_rhs,
-              rw ←nat.one_mul n.succ,
+            rw [one_pow, gt_iff_lt, lt_one_iff] at h₁,
+            unfold floor_root',
+            simp only 
+              [
+                h₁, zero_pow', ne.def, succ_ne_zero, not_false_iff, 
+                le_zero_iff, one_pow, lt_one_iff, and_self
+              ],
+          },
+        },
+        {
+          introv,
+          intros e_ge_1 h₁,
+          unfold floor_root',
+          split_ifs,
+          {
+            refine ⟨h_1,h₁⟩,
+          },
+          {
+            exact m_ih _ _ e_ge_1 (by linarith),
+          },
+        },
+      },
+      apply h₁ e n n h,
+      {
+        cases n,
+        {
+          rw [one_pow, gt_iff_lt, lt_one_iff],
+        },
+        {
+          induction e,
+          {
+            linarith,
+          },
+          { 
+            cases e_n,
+            {
+              rw [pow_one, gt_iff_lt, lt_add_iff_pos_right, lt_one_iff],
             },
-            apply ord_mul_lem,
-            apply succ_le_succ,
-            exact zero_le n,
-            apply e_ih,
-            apply succ_le_succ,
-            exact zero_le e_n,
-            intros m h₂,
-            sorry,
+            {
+              rw pow_succ,
+              conv {
+                to_rhs,
+                rw ←nat.one_mul n.succ,
+              },
+              apply sord_mul_lem,
+              {
+                exact one_lt_succ_succ n,
+              },
+              {
+                apply e_ih,
+                apply succ_le_succ,
+                exact zero_le e_n,
+              },
+            },
           },
         },
       },
@@ -221,28 +210,26 @@ lemma is_pp_equiv_lemma (n e : ℕ) : is_perfect_pow n e ↔ (floor_root e n)^e 
       {
         rcases h with ⟨m, h⟩,
         have h₁ : floor_root e n = m,
-        rcases floor_root_lemma e h' n with ⟨h₂, h₃⟩,
-        conv at h₂ {
-          to_rhs,
-          rw ←h,
-          skip,
-        },
-        conv at h₃ {
-          to_lhs,
-          rw ←h,
-          skip,
-        },
-        by_contra,
-        cases eq_or_lt_of_le h₂ with h₂ h₂,
         {
-          exact h (nat.pow_left_injective h' h₂),
-        },
-        {
-          have h₂ := pow_ord_lemma e h' h₂,
-          have h₃ := pow_ord_lemma e h' h₃,
-          apply ord_lemma (floor_root e n),
-          use m,
-          exact ⟨h₂, h₃⟩,
+          rcases floor_root_lemma e h' n with ⟨h₂, h₃⟩,
+          conv at h₂ {
+            to_rhs,
+            rw ←h,
+          },
+          conv at h₃ {
+            to_lhs,
+            rw ←h,
+          },
+          by_contra,
+          cases eq_or_lt_of_le h₂ with h₂ h₂,
+          {
+            exact h (nat.pow_left_injective h' h₂),
+          },
+          {
+            have h₂ := pow_ord_lemma e h' h₂,
+            have h₃ := pow_ord_lemma e h' h₃,
+            exact ord_lemma (floor_root e n) ⟨m, h₂, h₃⟩,
+          },
         },
         {
           rw h₁,
@@ -252,11 +239,8 @@ lemma is_pp_equiv_lemma (n e : ℕ) : is_perfect_pow n e ↔ (floor_root e n)^e 
       {
         have h₁ : e = 0,
         linarith,
-        rw h₁,
-        simp,
+        rw h₁ at *,
         rcases h with ⟨m, h⟩,
-        rw h₁ at h,
-        simp at h,
         exact h,
       },
     },
@@ -285,4 +269,4 @@ theorem sqrt_2_irr : ∀ q : ℚ, q^2 ≠ 2 :=
     dec_trivial,
   end 
 
-example : ∀ q : ℚ, q^2 ≠ ↑5 := dec_trivial
+example : ∀ q : ℚ, q^5 ≠ ↑101 := dec_trivial

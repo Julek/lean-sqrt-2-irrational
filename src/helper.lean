@@ -16,12 +16,12 @@ lemma rat_pow_denom_lemma :
     cases a,
     cases b,
     rw rat.mul_num_denom,
-    simp at *,
+    simp only [cast_mul] at *,
     norm_cast,
     have h₁ : (↑(a_denom * b_denom) : ℤ) > 0,
     {
       norm_cast,
-      simp,
+      rw canonically_ordered_comm_semiring.mul_pos,
       exact ⟨a_pos, b_pos⟩,
     },
     have h₂ : coprime (a_num * b_num).nat_abs (↑(a_denom * b_denom) : ℤ).nat_abs,
@@ -37,28 +37,27 @@ lemma rat_pow_denom_lemma :
     cases ↑(a_denom * b_denom),
     {
       delta rat.mk,
-      simp,
+      simp only [int.of_nat_eq_coe, nat.cast_inj],
       delta id_rhs,
       unfold rat.mk_nat,
       split_ifs,
       {
         exfalso,
-        rw h at h₁,
-        simp at h₁,
+        rw [h, int.of_nat_eq_coe, cast_zero, gt_iff_lt, lt_self_iff_false] at h₁,
         exact h₁,
       },
       {
         unfold rat.mk_pnat,
-        simp,
+        simp only,
         unfold coprime at h₂,
         rw int.nat_abs_of_nat_core at h₂,
         rw h₂,
-        simp,
+        exact nat.div_one _,
       },
     },
     {
       exfalso,
-      simp at h₁,
+      rw [gt_iff_lt, int.neg_succ_not_pos] at h₁,
       exact h₁,
     },
   end
@@ -73,12 +72,12 @@ lemma rat_pow_num_lemma :
     cases a,
     cases b,
     rw rat.mul_num_denom,
-    simp at *,
+    simp only [cast_mul] at *,
     norm_cast,
     have h₁ : (↑(a_denom * b_denom) : ℤ) > 0,
     {
       norm_cast,
-      simp,
+      rw [canonically_ordered_comm_semiring.mul_pos],
       exact ⟨a_pos, b_pos⟩,
     },
     have h₂ : coprime (a_num * b_num).nat_abs (↑(a_denom * b_denom) : ℤ).nat_abs,
@@ -94,27 +93,27 @@ lemma rat_pow_num_lemma :
     {
       rw int.nat_abs_of_nat_core at h₂,
       delta rat.mk,
-      simp,
+      simp only,
       delta id_rhs,
       unfold rat.mk_nat,
       split_ifs,
       {
         exfalso,
         rw h_1 at h₁,
-        simp at h₁,
+        rw [int.of_nat_eq_coe, cast_zero, gt_iff_lt, lt_self_iff_false] at h₁,
         exact h₁,
       },
       {
         unfold rat.mk_pnat,
-        simp,
+        simp only,
         unfold coprime at h₂,
         rw h₂,
-        simp,
+        rw [cast_one, int.div_one],
       },
     },
     {
       exfalso,
-      simp at h₁,
+      rw [gt_iff_lt, int.neg_succ_not_pos] at h₁,
       exact h₁,
     },
   end
@@ -159,22 +158,18 @@ lemma pow_ord_lemma : ∀ (e ≥ 1), ∀ {a b : ℕ}, a ^ e < b ^ e → a < b :=
     cases eq_or_lt_of_le h₁ with h₁ h₁,
     {
       rw ←h₁ at h',
-      simp at h',
+      rw lt_self_iff_false (b ^ e) at h',
       exact h',
     },
     {
-      have h := lt_trans h' (nat.pow_lt_pow_of_lt_left h₁ e_ge_1),
-      simp at h,
-      exact h,
+      exact (lt_self_iff_false (a ^ e)).1 (lt_trans h' (nat.pow_lt_pow_of_lt_left h₁ e_ge_1)),
     },
   end
 
 lemma ord_lemma : ∀ n : ℕ, ¬ ∃ m : ℕ, n < m ∧ m < n + 1 :=
   begin
     rintros n ⟨m, h⟩,
-    have h := lt_of_le_of_lt ((by linarith) : n + 1 ≤ m) h.2,
-    simp at h,
-    exact h,
+    exact (lt_self_iff_false (n + 1)).1 (lt_of_le_of_lt ((by linarith) : n + 1 ≤ m) h.2),
   end
 
   lemma sord_mul_lem : ∀ {a b c d : ℕ}, a < c → b < d → a * b < c * d :=
@@ -186,8 +181,7 @@ lemma ord_lemma : ∀ n : ℕ, ¬ ∃ m : ℕ, n < m ∧ m < n + 1 :=
       introv,
       intros _ h,
       exfalso,
-      simp at h,
-      exact h,
+      exact not_lt_zero' h,
     },
     {
       introv,
@@ -197,29 +191,25 @@ lemma ord_lemma : ∀ n : ℕ, ¬ ∃ m : ℕ, n < m ∧ m < n + 1 :=
         have i : c * d_n.succ = c * d_n + c,
         refl,
         rw i,
-        specialize d_ih a b c h₁ h₃,
-        apply lt_trans d_ih,
-        simp,
+        apply lt_trans (d_ih h₁ h₃),
+        rw lt_add_iff_pos_right (c * d_n),
         cases c,
         {
           exfalso,
-          simp at h₁,
-          exact h₁,
+          exact not_lt_zero' h₁,
         },
         {
-          simp,
+          exact succ_pos',
         },
       },
       {
         cases eq_or_lt_of_le ((lt_succ_iff.mp h₂) : b ≤ d_n) with h h,
         {
-
           rw ←h,
           induction c,
           {
             exfalso,
-            simp at h₁,
-            exact h₁,
+            exact not_lt_zero' h₁,
           },
           {
             by_cases h₄ : a < c_n,
@@ -228,18 +218,15 @@ lemma ord_lemma : ∀ n : ℕ, ¬ ∃ m : ℕ, n < m ∧ m < n + 1 :=
               rw add_one_mul,
               apply lt_trans (c_ih h₄),
               apply lt_add_of_pos_right,
-              simp,
+              exact succ_pos',
             },
             {
               cases eq_or_lt_of_le ((lt_succ_iff.mp h₁) : a ≤ c_n) with h' h',
               {
                 
-                rw ←h',
-                rw add_one_mul,
-                rw (_ : a * b.succ = a * b + a),
-                rw nat.add_assoc (a * b) a b.succ,
+                rw [←h', add_one_mul, (_ : a * b.succ = a * b + a), nat.add_assoc (a * b) a b.succ],
                 apply lt_add_of_pos_right,
-                simp,
+                simp only [add_pos_iff, succ_pos', or_true],
                 refl,
               },
               {
@@ -276,4 +263,48 @@ lemma ord_mul_lem : ∀ {a b c d : ℕ}, a ≥ b → c ≥ d → a * c ≥ b * d
     },
     have := sord_mul_lem h₁ h₂,
     linarith,
+  end
+
+lemma neg_odd_pow_lemma {q : ℚ} {e₁ : ℕ} : q < 0 → odd e₁ → q ^ e₁ < 0 :=
+  begin
+    intros q_le_0 e₁_odd,
+
+    induction e₁ using nat.strong_induction_on with e₁ ih,
+    {
+      simp only [odd_iff_not_even] at ih,
+      unfold odd at e₁_odd,
+      rcases e₁_odd with ⟨k,h'⟩,
+      rw h',
+      cases k,
+      {
+        rw [mul_zero, pow_one],
+        exact q_le_0,
+      },
+      {
+        rw 
+          [
+            ←nat.add_one, nat.left_distrib, mul_one,
+            pow_succ, pow_succ, ←rat.mul_assoc, mul_neg_iff
+          ],
+        left,
+        split,
+        {
+          rw mul_self_pos,
+          linarith,
+        },
+        {
+          apply ih (2 * k + 1),
+          {
+            rw h',
+            rw [add_lt_add_iff_right, mul_lt_mul_left succ_pos'],
+            exact lt_add_one k,
+          },
+          {
+            rw ←nat.odd_iff_not_even,
+            unfold odd,
+            use k,
+          },
+        },
+      },
+    },
   end
