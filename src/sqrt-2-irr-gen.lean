@@ -10,7 +10,7 @@ open nat
 
 theorem rootn_not_pn_irr :
   ∀ e n : ℕ,
-    ¬ (∃ m : ℕ, m^e = n) ↔ ∀ q : ℚ, q^e ≠ n := 
+    ¬ (∃ m : ℕ, m ^ e = n) ↔ ∀ q : ℚ, q ^ e ≠ n := 
 begin
   intros e n,
   split,
@@ -25,7 +25,7 @@ begin
       exact nat.not_lt_zero n h₁,
     },
     {
-      have h₁ : q.num.nat_abs^e = n * q.denom^e :=
+      have h₁ : q.num.nat_abs ^ e = n * q.denom ^ e :=
         begin
           rw rat.eq_iff_mul_eq_mul at q_to_e_eq_n,
           norm_cast at q_to_e_eq_n,
@@ -119,7 +119,7 @@ def floor_root' (e n : ℕ) : ℕ → ℕ
 def floor_root (e n : ℕ) : ℕ := floor_root' e n n
 
 
-lemma floor_root_lemma (e : ℕ) (h : e ≥ 1): ∀ n : ℕ, (floor_root e n)^e ≤ n ∧ n < ((floor_root e n) + 1)^e :=
+lemma floor_root_lemma (e : ℕ) (h : e ≥ 1): ∀ n : ℕ, (floor_root e n) ^ e ≤ n ∧ n < ((floor_root e n) + 1) ^ e :=
   begin
     intro n,
     unfold floor_root,
@@ -199,7 +199,7 @@ lemma floor_root_lemma (e : ℕ) (h : e ≥ 1): ∀ n : ℕ, (floor_root e n)^e 
 
 def is_perfect_pow (n e : ℕ) := ∃ m : ℕ, m ^ e = n
 
-lemma is_pp_equiv_lemma (n e : ℕ) : is_perfect_pow n e ↔ (floor_root e n)^e = n :=
+lemma is_pp_equiv_lemma (n e : ℕ) : is_perfect_pow n e ↔ (floor_root e n) ^ e = n :=
   begin
     split,
     {
@@ -252,7 +252,7 @@ lemma is_pp_equiv_lemma (n e : ℕ) : is_perfect_pow n e ↔ (floor_root e n)^e 
 instance is_perfect_pow_dec (n e : ℕ) : decidable (is_perfect_pow n e) :=
   decidable_of_iff _ (iff.symm $ is_pp_equiv_lemma n e)
 
-instance has_no_rational_root_dec (n e : ℕ) : decidable (∀ q : ℚ, q^e ≠ ↑n) :=
+instance has_no_rational_root_dec (n e : ℕ) : decidable (∀ q : ℚ, q ^ e ≠ ↑n) :=
   begin
     haveI inst : decidable (∃ (m : ℕ), m ^ e = n) := 
       eq.rec (is_perfect_pow_dec n e) 
@@ -260,11 +260,11 @@ instance has_no_rational_root_dec (n e : ℕ) : decidable (∀ q : ℚ, q^e ≠ 
     apply decidable_of_iff _ (rootn_not_pn_irr e n), 
   end
 
-theorem sqrt_2_irr : ∀ q : ℚ, q^2 ≠ 2 := 
+theorem sqrt_2_irr : ∀ q : ℚ, q ^ 2 ≠ 2 := 
   begin
     have h : (2 : ℚ) = ↑(2 : ℕ) := by norm_cast,
     rw h,
     dec_trivial,
   end 
 
-example : ∀ q : ℚ, q^5 ≠ ↑101 := dec_trivial
+example : ∀ q : ℚ, q ^ 5 ≠ ↑101 := dec_trivial

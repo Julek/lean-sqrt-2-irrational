@@ -99,16 +99,14 @@ lemma rat_pow_num_lemma :
       split_ifs,
       {
         exfalso,
-        rw h_1 at h₁,
-        rw [int.of_nat_eq_coe, cast_zero, gt_iff_lt, lt_self_iff_false] at h₁,
+        rw [h_1, int.of_nat_eq_coe, cast_zero, gt_iff_lt, lt_self_iff_false] at h₁,
         exact h₁,
       },
       {
         unfold rat.mk_pnat,
         simp only,
         unfold coprime at h₂,
-        rw h₂,
-        rw [cast_one, int.div_one],
+        rw [h₂, cast_one, int.div_one],
       },
     },
     {
@@ -132,13 +130,11 @@ lemma rat_pow_lemma (q : ℚ) (e : ℕ) :
       repeat { refl, },
       repeat {
         rw e_ih.2,
-        apply nat.coprime.pow_right _,
-        exact q.cop,
+        exact nat.coprime.pow_right _ q.cop,
       },
       repeat {
         rw [e_ih.1, int.nat_abs_pow],
-        apply nat.coprime.pow_left _,
-        exact q.cop,
+        exact nat.coprime.pow_left _ q.cop,
       },
     },
   end
@@ -157,8 +153,7 @@ lemma pow_ord_lemma : ∀ (e ≥ 1), ∀ {a b : ℕ}, a ^ e < b ^ e → a < b :=
     by_contra' h₁,
     cases eq_or_lt_of_le h₁ with h₁ h₁,
     {
-      rw ←h₁ at h',
-      rw lt_self_iff_false (b ^ e) at h',
+      rw [← h₁, lt_self_iff_false (b ^ e)] at h',
       exact h',
     },
     {
